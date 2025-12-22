@@ -9,8 +9,7 @@ export default function Home() {
             MKT Digital Twin
           </h1>
           <p className="text-center text-gray-600 mb-8">
-            Welcome to my AI-powered Digital Twin. Explore my experience in AI engineering, cloud deployment, and production-ready architectures.
-            Ask me how I deploy AI at scale in the cloud.
+            Welcome to my AI-powered Digital Twin.
           </p>
 
           <div className="h-[600px]">
