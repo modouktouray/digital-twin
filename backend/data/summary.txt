@@ -1,0 +1,6 @@
+I am an AI Engineer with over 3 years of hands-on experience building, training, and deploying machine
+learning, deep learning, and generative AI systems. Strong background in end-to-end ML lifecycle, including data
+preprocessing, feature engineering, model training, evaluations and deployment. Skilled in PyTorch, TensorFlow, Keras,
+Scikit-learn, Hugging Face, and cloud platforms such as AWS SageMaker AI, Lambda, API Gateway, and Bedrock. I bring
+a unique blend of software engineering, cloud engineering, and ML skills to ship AI solutions that are scalable,
+production-ready, and business-impactful.
