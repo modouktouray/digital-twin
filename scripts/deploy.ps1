@@ -30,11 +30,17 @@ if (-not (terraform workspace list | Select-String $Environment)) {
     terraform workspace select $Environment
 }
 
+$tfVars = @(
+  "-var=project_name=$ProjectName"
+  "-var=environment=$Environment"
+)
+
 if ($Environment -eq "prod") {
-    terraform apply -var-file=prod.tfvars -var="project_name=$ProjectName" -var="environment=$Environment" -auto-approve
+  terraform apply -auto-approve -var-file="prod.tfvars" @tfVars
 } else {
-    terraform apply -var="project_name=$ProjectName" -var="environment=$Environment" -auto-approve
+  terraform apply -auto-approve @tfVars
 }
+
 
 $ApiUrl        = terraform output -raw api_gateway_url
 $FrontendBucket = terraform output -raw s3_frontend_bucket
