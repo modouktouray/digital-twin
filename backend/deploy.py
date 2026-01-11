@@ -32,7 +32,7 @@ def main():
             "linux/amd64",  # Force x86_64 architecture
             "--entrypoint",
             "",  # Override the default entrypoint
-            "public.ecr.aws/lambda/python:3.12",
+            "public.ecr.aws/lambda/python:3.14",
             "/bin/sh",
             "-c",
             "pip install --target /var/task/lambda-package -r /var/task/requirements.txt --platform manylinux2014_x86_64 --only-binary=:all: --upgrade",
