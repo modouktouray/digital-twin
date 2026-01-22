@@ -17,9 +17,15 @@ variable "environment" {
 }
 
 variable "bedrock_model_id" {
-  description = "Bedrock model ID"
+  description = "Bedrock model ID (use 'us.' or 'eu.' prefix for cross-region inference)"
   type        = string
   default     = "amazon.nova-micro-v1:0"
+}
+
+variable "bedrock_regions" {
+  description = "List of AWS regions for cross-region Bedrock inference (failover order)"
+  type        = list(string)
+  default     = ["us-west-2", "us-east-1", "us-east-2"]
 }
 
 variable "lambda_timeout" {

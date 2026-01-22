@@ -26,19 +26,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Bedrock client
-bedrock_client = boto3.client(
-    service_name="bedrock-runtime", 
-    region_name=os.getenv("DEFAULT_AWS_REGION", "us-west-2")
-)
-
 # Bedrock model selection
 # Available models:
 # - amazon.nova-micro-v1:0  (fastest, cheapest)
 # - amazon.nova-lite-v1:0   (balanced - default)
 # - amazon.nova-pro-v1:0    (most capable, higher cost)
-# Remember the Heads up: you might need to add us. or eu. prefix to the below model id
+# Use us. or eu. prefix for cross-region inference (e.g., us.amazon.nova-lite-v1:0)
 BEDROCK_MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "us.amazon.nova-lite-v1:0")
+
+# Cross-region inference configuration
+# Multiple regions for failover when throttled
+BEDROCK_REGIONS = os.getenv("BEDROCK_REGIONS", "us-west-2,us-east-1,us-east-2").split(",")
+
+# Initialize Bedrock clients for all configured regions
+bedrock_clients = {
+    region: boto3.client(service_name="bedrock-runtime", region_name=region)
+    for region in BEDROCK_REGIONS
+}
+
+# Track current region index for round-robin/failover
+current_region_index = 0
 
 # Memory storage configuration
 USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
@@ -109,7 +116,8 @@ def save_conversation(session_id: str, messages: List[Dict]):
 
 
 def call_bedrock(conversation: List[Dict], user_message: str) -> str:
-    """Call AWS Bedrock with conversation history"""
+    """Call AWS Bedrock with conversation history and cross-region failover"""
+    global current_region_index
     
     # Build messages in Bedrock format
     messages = []
@@ -133,33 +141,65 @@ def call_bedrock(conversation: List[Dict], user_message: str) -> str:
         "content": [{"text": user_message}]
     })
     
-    try:
-        # Call Bedrock using the converse API
-        response = bedrock_client.converse(
-            modelId=BEDROCK_MODEL_ID,
-            messages=messages,
-            inferenceConfig={
-                "maxTokens": 2000,
-                "temperature": 0.7,
-                "topP": 0.9
-            }
-        )
+    # Try each region with failover on throttling
+    last_error = None
+    regions_tried = 0
+    
+    while regions_tried < len(BEDROCK_REGIONS):
+        region = BEDROCK_REGIONS[current_region_index]
+        client = bedrock_clients[region]
         
-        # Extract the response text
-        return response["output"]["message"]["content"][0]["text"]
-        
-    except ClientError as e:
-        error_code = e.response['Error']['Code']
-        if error_code == 'ValidationException':
-            # Handle message format issues
-            print(f"Bedrock validation error: {e}")
-            raise HTTPException(status_code=400, detail="Invalid message format for Bedrock")
-        elif error_code == 'AccessDeniedException':
-            print(f"Bedrock access denied: {e}")
-            raise HTTPException(status_code=403, detail="Access denied to Bedrock model")
-        else:
-            print(f"Bedrock error: {e}")
-            raise HTTPException(status_code=500, detail=f"Bedrock error: {str(e)}")
+        try:
+            print(f"Calling Bedrock in region: {region}")
+            
+            # Call Bedrock using the converse API
+            response = client.converse(
+                modelId=BEDROCK_MODEL_ID,
+                messages=messages,
+                inferenceConfig={
+                    "maxTokens": 2000,
+                    "temperature": 0.7,
+                    "topP": 0.9
+                }
+            )
+            
+            # Extract the response text
+            return response["output"]["message"]["content"][0]["text"]
+            
+        except ClientError as e:
+            error_code = e.response['Error']['Code']
+            
+            if error_code == 'ThrottlingException':
+                # Throttled - try next region
+                print(f"Throttled in region {region}, trying next region...")
+                last_error = e
+                current_region_index = (current_region_index + 1) % len(BEDROCK_REGIONS)
+                regions_tried += 1
+                continue
+                
+            elif error_code == 'ValidationException':
+                # Handle message format issues - don't retry
+                print(f"Bedrock validation error: {e}")
+                raise HTTPException(status_code=400, detail="Invalid message format for Bedrock")
+                
+            elif error_code == 'AccessDeniedException':
+                print(f"Bedrock access denied in region {region}: {e}")
+                # Try next region in case access is regional
+                last_error = e
+                current_region_index = (current_region_index + 1) % len(BEDROCK_REGIONS)
+                regions_tried += 1
+                continue
+                
+            else:
+                print(f"Bedrock error in region {region}: {e}")
+                raise HTTPException(status_code=500, detail=f"Bedrock error: {str(e)}")
+    
+    # All regions exhausted
+    print(f"All {len(BEDROCK_REGIONS)} regions exhausted. Last error: {last_error}")
+    raise HTTPException(
+        status_code=429, 
+        detail=f"All Bedrock regions throttled. Please wait before trying again. Regions tried: {BEDROCK_REGIONS}"
+    )
 
 
 @app.get("/")
@@ -177,7 +217,9 @@ async def health_check():
     return {
         "status": "healthy", 
         "use_s3": USE_S3,
-        "bedrock_model": BEDROCK_MODEL_ID
+        "bedrock_model": BEDROCK_MODEL_ID,
+        "bedrock_regions": BEDROCK_REGIONS,
+        "current_region": BEDROCK_REGIONS[current_region_index]
     }
 
 
