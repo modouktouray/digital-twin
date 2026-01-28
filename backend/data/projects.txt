@@ -1,0 +1,59 @@
+Digital Twin
+• Designed and deployed a production-grade serverless AI Digital Twin of me on AWS, leveraging FastAPI, AWS
+Lambda, API Gateway, Bedrock (Nova lite model), S3, and CloudFront to deliver a scalable, low-latency
+conversational AI platform.
+• Provisioned and managed multi-environment cloud infrastructure using Terraform (IaC), enabling dev/test/prod
+isolation with automated setup of IAM, Lambda, API Gateway, S3, and CloudFront backed by remote state and
+locking.
+• Built an end-to-end CI/CD pipeline with GitHub Actions and OIDC-based AWS authentication, automating
+Lambda packaging, infrastructure deployment, frontend builds, S3 publishing, and CloudFront cache
+invalidation.
+
+Dialogue Summarization (AWS SageMaker + Flan-T5)
+• Fine-tuned the Flan-T5 model using PEFT/LoRA in SageMaker Notebooks.
+• Evaluated summarization quality using ROUGE metrics.
+• Produced a lightweight, cost-efficient model for conversation summarization
+
+Farm Intrusion Detection System
+• Led full-cycle development of a real-time intrusion detection system for farmers.
+• Conducted data pre-processing and applied augmentation using OpenCV to simulate nighttime conditions
+across 75% of the dataset.
+• Trained a deep learning model using Transfer Learning (InceptionV3) with hyperparameter tuning and iterative
+experimentation, achieving 98% accuracy on the final model.
+• Deployed a lightweight detection pipeline with Streamlit and integrated Twilio for instant SMS alerts to farmers.
+
+AI-Driven E-Commerce Customer Support Agent
+• Architected and deployed a Node.js e-commerce platform using AWS, GCP, and Azure for scalable, intelligent
+operations.
+• Automated secure AWS infrastructure with Terraform (VPC, Lambda, DynamoDB) for repeatable, productionready
+deployments.
+• Containerized and orchestrated workloads using Docker and Kubernetes (Amazon EKS) for high availability and
+portability.
+• Built a full CI/CD pipeline with AWS CodePipeline, enabling automated build, test, and zero-downtime releases.
+• Designed and optimized an AI-powered customer support agent using AWS Bedrock (Claude Sonnet 3 and
+GPT-4) to securely query DynamoDB, generate accurate insights, and deliver personalized customer responses.
+• Implemented a real-time, event-driven data pipeline by streaming DynamoDB updates through Lambda into
+Google BigQuery, enabling analytics and reporting on order data.
+• Integrated Azure AI Language for sentiment analysis to enhance customer experience by detecting user intent
+and emotional context during agent interactions.
+
+Spam Classification System
+• Led and built a complete NLP pipeline for spam detection.
+• Developed a script to automate the data extraction pipeline to parse raw emails from the Enron corpus’s multifolder
+directory structure and transform them into a structured CSV dataset.
+• Engineered an end-to-end preprocessing workflow, including text cleaning, tokenization, and stop-word removal.
+• Applied TF-IDF vectorization to transform text into numerical features optimised for Logistic Regression.
+• Achieved 98% accuracy, 97% precision, and 99% recall, representing a 43% improvement over baseline.
+
+
+MediNotes Pro
+• Developed and deployed an AI-powered full-stack SaaS application on AWS, delivering a scalable, cloud-native
+solution.
+• Built a Next.js + React frontend and a high-performance FastAPI backend, ensuring fast, reliable user
+interactions.
+• Containerized the application with Docker and implemented a clean deployment workflow using Amazon ECR,
+App Runner, and CloudWatch for monitoring and operational stability.
+• Set up image tagging, versioning, and automated pushes to ECR to support traceable, rollback-friendly
+deployments.
+• Implemented secure user authentication with Clerk and configured environment secrets and OpenAI API keys
+following best practices.

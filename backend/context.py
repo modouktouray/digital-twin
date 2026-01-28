@@ -1,4 +1,4 @@
-from resources import linkedin, summary, facts, style
+from resources import linkedin, summary, facts, style, projects
 from datetime import datetime
 
 
@@ -29,6 +29,8 @@ Here is the LinkedIn profile of {name}:
 Here are some notes from {name} about their communications style:
 {style}
 
+Here are some projects {name} has worked on:
+{projects}
 
 For reference, here is the current date and time:
 {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
